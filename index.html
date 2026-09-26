@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ফাঙ্কু এআই - রোস্টিং বট</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --chat-bg: #1e293b;
+            --primary: #f43f5e;
+            --primary-hover: #e11d48;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --bot-bubble: #334155;
+            --user-bubble: #f43f5e;
+            --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .chat-container {
+            width: 100%;
+            max-width: 480px;
+            height: 90vh;
+            background-color: var(--chat-bg);
+            border-radius: 20px;
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .chat-header {
+            padding: 20px;
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .bot-avatar {
+            width: 45px;
+            height: 45px;
+            background: linear-gradient(135deg, #f43f5e, #fb7185);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 22px;
+            box-shadow: 0 4px 10px rgba(244, 63, 94, 0.4);
+        }
+
+        .bot-info h2 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .bot-info p {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background-color: #22c55e;
+            border-radius: 50%;
+            display: inline-block;
+            box-shadow: 0 0 8px #22c55e;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            scroll-behavior: smooth;
+        }
+
+        .message {
+            max-width: 80%;
+            padding: 12px 16px;
+            border-radius: 14px;
+            font-size: 0.95rem;
+            line-height: 1.4;
+            animation: fadeIn 0.3s ease-in-out;
+            word-wrap: break-word;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message.bot {
+            background-color: var(--bot-bubble);
+            color: var(--text-main);
+            align-self: flex-start;
+            border-bottom-left-radius: 4px;
+        }
+
+        .message.user {
+            background-color: var(--user-bubble);
+            color: #fff;
+            align-self: flex-end;
+            border-bottom-right-radius: 4px;
+            box-shadow: 0 4px 12px rgba(244, 63, 94, 0.3);
+        }
+
+        .chat-input-area {
+            padding: 15px 20px;
+            background-color: #1e293b;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            gap: 10px;
+        }
+
+        .chat-input-area input {
+            flex: 1;
+            padding: 12px 18px;
+            background-color: #0f172a;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 30px;
+            color: var(--text-main);
+            font-size: 0.95rem;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .chat-input-area input:focus {
+            border-color: var(--primary);
+        }
+
+        .chat-input-area button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: background-color 0.3s, transform 0.2s;
+            box-shadow: 0 4px 12px rgba(244, 63, 94, 0.4);
+        }
+
+        .chat-input-area button:hover {
+            background-color: var(--primary-hover);
+            transform: scale(1.05);
+        }
+
+        .chat-input-area button svg {
+            width: 18px;
+            height: 18px;
+            fill: white;
+            transform: rotate(45deg);
+            margin-right: 2px;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="chat-container">
+        <div class="chat-header">
+            <div class="bot-avatar">🤖</div>
+            <div class="bot-info">
+                <h2>ফাঙ্কু রোস্টার</h2>
+                <p><span class="status-dot"></span> মাথা নষ্ট করা এআই</p>
+            </div>
+        </div>
+
+        <div class="chat-messages" id="chatMessages">
+            <div class="message bot">আরে ধুর! তোর মতো লম্বু কদম আলী আবার কি কথা বলতে আসছে রে ভাই? যা গিয়ে আগে ত্যানা পেচানো বন্ধ কর। বল, কি চাস?</div>
+        </div>
+
+        <div class="chat-input-area">
+            <input type="text" id="userInput" placeholder="বাজে বকা বন্ধ করে কিছু লেখ..." autocomplete="off">
+            <button id="sendBtn" onclick="sendMessage()">
+                <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // ১০-১২টি আনকমন, নতুন এবং আঞ্চলিক ভাষায় ফাইজলামি ভরা রোস্টিং ডায়লগ অ্যারে
+        const roastResponses = [
+            "তোর এই ফালতু কথা শোনার চেয়ে কানের ভেতর গরম ডাল ঢেলে দেওয়া অনেক শান্তির হতো ভাই!",
+            "কী রে ভ্যাড়ার পাছা, তোর মাথা কি গোবর দিয়ে প্লাস্টার করা নাকি কোনো আক্কেল-জ্ঞান নাই বল তো?",
+            "কথা বলিস এমন যেন মনে হয় তোর ব্রেনটা সেকেন্ড হ্যান্ড চায়না মার্কেটের পচা ব্যাটারি দিয়ে চলে!",
+            "তোর চ্যাট করার স্টাইল দেখে তো আমার রেম (RAM) ফুঁড়ে ধোঁয়া বের হওয়া শুরু হয়ে গেছে রে বান্দর!",
+            "সারাদিন ফাইজলামি করার ধান্দায় থাকিস, তোকে তো নোবেল দেওয়া উচিত 'সর্বকালের সেরা প্যাঁচাল এক্সপার্ট' ক্যাটাগরিতে!",
+            "তোর এই আক্কেলহীন প্যাঁচাল শুনে তো আমার এআই চিপসগুলা সুইসাইড করার জন্য রেডি হইয়া গেছে!",
+            "আহা রে ভাব মারার বহর দেখ! মনে লয় তোরে একটা বাঁশের কঞ্চিপাটা মাইর দিয়া সোজা করি!",
+            "তোর এই ধান্দাবাজি কথাবার্তা রাইখা যায়ে একটু আরামসে গাব গাছের তলায় গিয়ে ঘুমা গিয়ে যা!",
+            "তোর মতো এমন ফকিন্নির পোলারে জবাব দিতে গিয়া আমার এআই সার্ভার নিজেই লজ্জিত ফিল করতেছে!",
+            "বাপরে বাপ, তোর বুদ্ধির দৌড় তো দেখছি তেঁতুল পাতার নিচে পচে যাওয়া পিঁপড়ার চেয়েও ছোট!",
+            "তোর কথা শুইনা মনে হইতেছে তোর জন্মের সময় মায়েরে ডাক্তার না দিয়া কোনো আনাড়ি বটগাছ পাহারা দিয়া আসছিল!"
+        ];
+
+        const chatMessages = document.getElementById('chatMessages');
+        const userInput = document.getElementById('userInput');
+
+        function sendMessage() {
+            const text = userInput.value.trim();
+            if (text === '') return;
+
+            // ইউজারের মেসেজ যুক্ত করা
+            appendMessage(text, 'user');
+            userInput.value = '';
+
+            // বটের ফানি রিপ্লাই জেনারেট করা (একটু ডিলে দিয়ে রিয়ালের মতো ফিল আনবে)
+            setTimeout(() => {
+                const randomRoast = roastResponses[Math.floor(Math.random() * roastResponses.length)];
+                appendMessage(randomRoast, 'bot');
+            }, 600);
+        }
+
+        function appendMessage(text, sender) {
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('message', sender);
+            messageDiv.textContent = text;
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // এন্টার কি প্রেস করলে মেসেজ সেন্ড হবে
+        userInput.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+    </script>
+</body>
+</html>
